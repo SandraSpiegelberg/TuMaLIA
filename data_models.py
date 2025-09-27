@@ -12,9 +12,9 @@ class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     email = db.Column(db.String(120), nullable=False)
-    password_hash = db.Column(db.String(20), nullable=True)
+    password_hash = db.Column(db.Text, nullable=True)
 
-    threads = db.relationship('Thread', backref='user', lazy=True)
+    threads = db.relationship('Thread', backref='user', lazy=True, cascade='all, delete-orphan')
 
 
     def __init__(self, username, email, password_hash=None, user_id=None):
@@ -25,7 +25,7 @@ class User(db.Model):
 
 
     def __repr__(self):
-        return f'User(user_id = {self.user_id}, user_name = {self.user_name}, email = {self.email})'
+        return f'User(user_id = {self.user_id}, user_name = {self.username}, email = {self.email})'
 
 
     def __str__(self):
@@ -37,14 +37,14 @@ class Thread(db.Model):
     __tablename__ = 'Threads'
 
     thread_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    create_date = db.Column(db.DateTime, nullable=False)
-    update_date = db.Column(db.DateTime, nullable=False)
+    create_date = db.Column(db.String(20), nullable=False)
+    update_date = db.Column(db.String(20), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('Users.user_id'), nullable=False)
 
-    messages = db.relationship('Message', backref='thread', lazy=True)
+    messages = db.relationship('Message', backref='thread', lazy=True, cascade='all, delete-orphan')
 
 
-    def __init__(self, create_date, update_date, user_id, thread_id=None):
+    def __init__(self, create_date, user_id, update_date=None, thread_id=None):
         self.thread_id = thread_id
         self.create_date = create_date
         self.update_date = update_date
@@ -72,7 +72,7 @@ class Message(db.Model):
     thread_id = db.Column(db.Integer, db.ForeignKey('Threads.thread_id'), nullable=False)
 
 
-    def __innit__(self, content, role, timestamp, thread_id, message_id=None):
+    def __init__(self, content, role, timestamp, thread_id, message_id=None):
         self.message_id = message_id
         self.content = content
         self.role = role
